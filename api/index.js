@@ -6,12 +6,19 @@ const photosRouter = require('./routes/photos')
 const seedDB = require('./db-script')
 
 const app = express()
-const PORT = process.env.PORT || 5000
+
+// would be better ot use env variables
+const PORT = 5000
 
 app.use(express.json())
+
+// never do that in production! Just for developing purpose.
 app.use(cors({}))
+
+// allow the images to be read from this folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
+// connect to db
 mongoose.connect('mongodb://localhost/photo-gallery-db')
 
 const db = mongoose.connection

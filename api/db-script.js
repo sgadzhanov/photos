@@ -1,4 +1,3 @@
-const mongoose = require('mongoose')
 const Photo = require('./models/Photo')
 
 const DUMMY_PHOTOS = [
@@ -19,6 +18,8 @@ const DUMMY_PHOTOS = [
   },
 ]
 
+// This is my initial simple script for inserting some dummy data into the database
+// It helps to show some images when you run the front-end for first time
 async function seedDB() {
   try {
     // add photos if the db is empty
