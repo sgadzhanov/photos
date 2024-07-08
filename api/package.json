@@ -1,0 +1,12 @@
+{
+  "name": "photos",
+  "version": "1.0.0",
+  "description": "photos app for appgreat",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
