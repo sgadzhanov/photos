@@ -1,122 +1,165 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import PhotoItem from "../components/PhotoItem"
-import './App.css'
+import "./App.css"
 
 function App() {
   const [photos, setPhotos] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [image, setImage] = useState(null)
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    image: null,
+  })
   const [error, setError] = useState(false)
-  const [isModified, setIsModified] = useState(false)
-  const [editPhoto, setEditPhoto] = useState(null)
+
+  async function fetchPhotos() {
+    setIsLoading(true)
+    try {
+      const response = await fetch("http://localhost:5000/api/photos")
+      const data = await response.json()
+      setPhotos(data)
+    } catch (error) {
+      console.error("Error fetching photos:", error)
+      setError(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchPhotos() {
-      setIsLoading(true)
-      try {
-        const response = await fetch('http://localhost:5000/api/photos')
-        const data = await response.json()
-
-        setPhotos(data)
-      } catch (e) {
-        console.log('There was an error fetching the images from the api.', e)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     fetchPhotos()
-  }, [isModified])
+  }, [])
 
-  async function submitHandler(e) {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }))
+  }
+
+  const handleFileChange = (e) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      image: e.target.files[0],
+    }))
+  }
+
+  const submitHandler = async (e) => {
     e.preventDefault()
     setIsLoading(true)
 
-    const formData = new FormData()
-    formData.append('title', title)
-    formData.append('description', description)
-    formData.append('image', image)
+    const formDataToSubmit = new FormData()
+    formDataToSubmit.append("title", formData.title)
+    formDataToSubmit.append("description", formData.description)
+    formDataToSubmit.append("image", formData.image)
 
     try {
-      const response = await fetch('http://localhost:5000/api/photos', {
-        method: 'POST',
-        body: formData,
+      const response = await fetch("http://localhost:5000/api/photos", {
+        method: "POST",
+        body: formDataToSubmit,
       })
 
       if (!response.ok) {
-        setError(true)
+        throw new Error("Failed to upload photo")
       }
 
-      setIsModified(true)
-      setTitle('')
-      setDescription('')
-      setImage(null)
-    } catch (e) {
-      console.log('There was an error uploading the image.', e)
+      setIsLoading(false)
+      setFormData({ title: "", description: "", image: null })
+      fetchPhotos()
+    } catch (error) {
+      console.error("Error uploading photo:", error)
       setError(true)
       setIsLoading(false)
-    } finally {
-      setIsLoading(false)
     }
   }
 
-  async function deleteHandler(id) {
+  const deleteHandler = async (id) => {
     setIsLoading(true)
-
     try {
-      const res = await fetch('http://localhost:5000/api/photos/' + id, {
-        method: 'DELETE',
+      const response = await fetch(`http://localhost:5000/api/photos/${id}`, {
+        method: "DELETE",
       })
-      if (!res.ok) {
-        setError(true)
-        setIsModified(true)
+      if (!response.ok) {
+        throw new Error("Failed to delete photo")
       }
-    } catch (e) {
-      console.log(e)
-      setIsModified(true)
+      setPhotos((prevPhotos) => prevPhotos.filter((photo) => photo._id !== id))
+    } catch (error) {
+      console.error("Error deleting photo:", error)
+      setError(true)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleEdit = async (editedPhoto) => {
+    setIsLoading(true)
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/photos/${editedPhoto._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(editedPhoto),
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error("Failed to update photo")
+      }
+
+      setIsLoading(false)
+      fetchPhotos()
+    } catch (error) {
+      console.error("Error updating photo:", error)
+      setError(true)
+      setIsLoading(false)
+    }
+  }
 
   if (isLoading) {
-    return <p style={{ textAlign: 'center' }}>Loading...</p>
+    return <p style={{ textAlign: "center" }}>Loading...</p>
   }
 
   return (
     <main>
-      {isLoading && <p style={{ textAlign: 'center' }}>Uploading, please wait...</p>}
-      {error && <p style={{ textAlign: 'center' }}>There was an error uploading the image.</p>}
-      <form onSubmit={submitHandler} className='images__form'>
+      {error && (
+        <p style={{ textAlign: "center", color: "red" }}>
+          There was an error. Please try again.
+        </p>
+      )}
+      <form onSubmit={submitHandler} className="images__form">
         <input
           type="text"
+          name="title"
           placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={formData.title}
+          onChange={handleInputChange}
           required
         />
         <textarea
+          name="description"
           placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={formData.description}
+          onChange={handleInputChange}
           required
         />
         <input
           type="file"
-          onChange={(e) => setImage(e.target.files[0])}
+          onChange={handleFileChange}
           required
         />
         <button type="submit">Upload Photo</button>
       </form>
-      <div className='photos__container'>
-        {photos.map(photo => (
+      <div className="photos__container">
+        {photos.map((photo) => (
           <PhotoItem
-            key={photo.imageUrl}
+            key={photo._id}
             photo={photo}
             onDelete={deleteHandler}
+            onEdit={handleEdit}
           />
         ))}
       </div>
