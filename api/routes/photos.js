@@ -48,4 +48,40 @@ router.post('/', upload.single('image'), async (req, res) => {
   }
 })
 
+// DELETE - delete a photo
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const photo = await Photo.findByIdAndDelete(req.params.id)
+
+    if (!photo) {
+      return res.status(404).json({ message: 'Photo not found' })
+    }
+
+    res.json({ message: 'Photo deleted successfully' })
+  } catch (e) {
+    console.log('There was an error deleting the photo:', e)
+    res.status(500).json({ message: e.message })
+  }
+})
+
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedPhoto = await Photo.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    )
+
+    if (!updatedPhoto) {
+      return res.status(404).json({ message: 'Photo not found' })
+    }
+
+    res.json(updatedPhoto)
+  } catch (e) {
+    console.log('There was an error updating the photo:', e)
+    res.status(500).json({ message: e.message })
+  }
+})
+
 module.exports = router
