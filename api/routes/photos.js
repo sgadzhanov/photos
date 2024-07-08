@@ -4,6 +4,9 @@ const multer = require('multer')
 
 const Photo = require('../models/Photo')
 
+// I have never though about such an implementation or library like 'multer'
+// I wasted more than an hour to find such a library and to save the images locally
+// so that those images could be rendered in the front-end
 const imageStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/') // Directory to save uploaded files
@@ -14,6 +17,9 @@ const imageStorage = multer.diskStorage({
 })
 
 const upload = multer({ storage: imageStorage })
+
+// Would be really nice to have controllers/services
+// Didnt have the time for it
 
 // GET - fetch paginated photos
 router.get('/', async (req, res) => {
@@ -27,6 +33,21 @@ router.get('/', async (req, res) => {
     res.json(photos)
   } catch (e) {
     console.log('There was an error fetching photos:', e)
+  }
+})
+
+// GET - find by id
+
+router.get('/:id', async (req, res) => {
+  try {
+    const photo = await Photo.findById(req.params.id)
+    if (!photo) {
+      return res.status(404).json({ message: 'Photo not found' })
+    }
+    res.json(photo)
+  } catch (e) {
+    console.log('There was an error fetching the photo:', e)
+    res.status(500).json({ message: e.message })
   }
 })
 
@@ -65,6 +86,7 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+// PUT - edit an image
 router.put('/:id', async (req, res) => {
   try {
     const updatedPhoto = await Photo.findByIdAndUpdate(

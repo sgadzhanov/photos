@@ -55,6 +55,7 @@ const PhotoItem = ({ photo, onEdit, onDelete }) => {
               type="text"
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
+              min="2"
             />
           </div>
           <div>
@@ -64,6 +65,7 @@ const PhotoItem = ({ photo, onEdit, onDelete }) => {
               className={styles.edit__description}
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
+              min="2"
             />
           </div>
           <div>
