@@ -1,9 +1,19 @@
 const express = require('express')
 const router = express.Router()
 const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
 
 const Photo = require('../models/Photo')
+
+const imageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/') // Directory to save uploaded files
+  },
+  filename: function (req, file, cb) {
+    cb(null, Math.random() + '-' + file.originalname) // Rename file to avoid conflicts
+  }
+})
+
+const upload = multer({ storage: imageStorage })
 
 // GET - fetch paginated photos
 router.get('/', async (req, res) => {
