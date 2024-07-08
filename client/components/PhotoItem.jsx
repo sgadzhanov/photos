@@ -2,6 +2,8 @@ import styles from './PhotoItem.module.css'
 
 export default function PhotoItem({
   photo,
+  onEdit,
+  onDelete,
 }) {
   const isExternalUrl = photo.imageUrl.startsWith('http') || photo.imageUrl.startsWith('https');
   const imageUrl = isExternalUrl ? photo.imageUrl : `http://localhost:5000/${photo.imageUrl.replace(/\\/g, '/')}`;
